@@ -1,24 +1,20 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import * as types from './libs/types/types'
-
-// import { useWallet as useSolanaWallet } from "@solana/wallet-adapter-react";
-// import { PhantomWalletName } from "@solana/wallet-adapter-phantom";
-
 
 import { MyKeys } from './libs/componets/ownedKeys'
 import { Contents } from './libs/componets/contents'
 import * as wallet from './libs/api/wallet'
 
 import { useEffect, useState } from "react";  
-import { useQuery } from "react-query";
 
 function App() {
 
   const [provider, setProvider] = useState<types.PhantomProvider | undefined>(
     undefined
   );
+
+  const [ walletAddress, setWalletAddress ] = useState<string>();
 
   // detect phantom provider exists
   useEffect(() => {
@@ -28,13 +24,8 @@ function App() {
     else setProvider(undefined);
   }, []);
 
-
   const [ keys, showKeys ] = useState<Boolean>(true);
   const [ content, showContent ] = useState<types.KeyEntry>();
-
-  const phantomWallet = useQuery(["phantomWallet"], () => wallet.connectWallet());
-  // const walletVerification = useQuery(["walletVerificaation"], () => wallet.getWalletVerification(provider.data));
-  // console.log(walletVerification.data);
 
   const myKeysOnClick = (key: types.KeyEntry) => {
     showKeys(false);
@@ -43,7 +34,8 @@ function App() {
   
   return (
     <div className="App">
-        <MyKeys walletAddress={phantomWallet.data?.publicKey?.toBase58() || ""} display={keys} onClick={myKeysOnClick} />
+        {!walletAddress && (<button onClick={async () => { const address = (await wallet.connectWallet()).publicKey?.toBase58(); setWalletAddress(address) }} >Connect phantom wallet</button>)}
+        {walletAddress && (<MyKeys walletAddress={walletAddress} display={keys} onClick={myKeysOnClick} />)}
 
         {provider && content && content?.id && (<Contents keyEntry={content} wallet={provider} />)}
     </div>

@@ -19,7 +19,6 @@ export const connectWallet = async () => {
     if (solana) {
         try {
             const response = await solana.connect();
-            console.log('wallet account ', response.publicKey.toString());
             return response;
         } catch (err) {
             // { code: 4001, message: 'User rejected the request.' }
