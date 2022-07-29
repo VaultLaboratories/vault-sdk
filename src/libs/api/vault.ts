@@ -43,7 +43,7 @@ export const getOwnedKeys = (
     const headers = new Headers();
   
     return request(
-      `/v0/solana/wallet/${walletAddress}/keys`,
+      `/v0/solana/wallet/${walletAddress}/keys${lastMint ? `?lastKeyId=${lastMint}`: ''}`,
       {
         headers,
         method: "GET",
@@ -52,8 +52,8 @@ export const getOwnedKeys = (
     );
   };
 
- export const getContents = async (key: types.KeyEntry, walletAddress: string, walletVerificationGetter: () => Promise<types.WalletPermissions>): Promise<types.Content[]> => {
-    const permissions = await walletVerificationGetter();
+ export const getContents = async (key: types.KeyEntry, walletAddress: string, walletVerificationGetter: (maxAgeInDays: number) => Promise<types.WalletPermissions>, retry: Boolean = false): Promise<types.Content[]> => {
+    const permissions = await walletVerificationGetter(retry ? -1 : 89); //-1 forces to refresh the wallet token
 
     console.log(`Got permissions ${JSON.stringify(permissions)}`);
 
@@ -71,5 +71,11 @@ export const getOwnedKeys = (
             method: "GET",
             mode: "cors"
         }
-    );
+    ).catch((e) => {
+        if (!retry) {
+            return getContents(key, walletAddress, walletVerificationGetter, true)
+        }
+        Promise.reject(e);
+    });
+    
  } 

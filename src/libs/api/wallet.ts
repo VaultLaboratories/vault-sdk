@@ -43,10 +43,7 @@ export const walletVerification = async (wallet: PhantomProvider): Promise<Walle
 
 export const getWalletVerification = async (wallet: PhantomProvider, maxAgeInDays: number = 89): Promise<WalletPermissions> => {
     const verificationKey = `verification_${wallet.publicKey?.toBase58()}`;
-    console.log(`Verification for ${verificationKey}`);
     let verification = JSON.parse(localStorage.getItem(verificationKey) || "{\"signedAt\": 1}") as WalletPermissions;
-
-    console.log(`Retrieved verification ${JSON.stringify(verification)}`);
 
     const today = new Date();
     const signedAt = new Date(verification.signedAt);

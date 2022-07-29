@@ -2,15 +2,13 @@ import * as wallet from '../api/wallet'
 
 import {
     useInfiniteQuery,
-    UseInfiniteQueryResult,
-    useQuery
+    UseInfiniteQueryResult
   } from "react-query";
 
 import { getContents } from '../api/vault'
 
 import { useMemo } from 'react';
 import * as types from '../types/types';  
-import { ConnectContactLens } from 'aws-sdk';
 
 interface Props {
     keyEntry?: types.KeyEntry | undefined, 
@@ -18,13 +16,9 @@ interface Props {
 }
 
 export const Contents = (props: Props) => {
-    // const walletVerification = useQuery(["wallet"], () => {
-    //     wallet.getWalletVerification(props.wallet);
-    //   });
-
     const contents = useInfiniteQuery(
         ["contents", JSON.stringify(props.keyEntry)],
-        ({ pageParam }) => getContents(props.keyEntry!!, props.wallet.publicKey?.toBase58() || "", () => wallet.getWalletVerification(props.wallet)),
+        ({ pageParam }) => getContents(props.keyEntry!!, props.wallet.publicKey?.toBase58() || "", (maxAgeInDays: number) => wallet.getWalletVerification(props.wallet, maxAgeInDays)),
             {
                 getNextPageParam: (lastPage = []) => {
                     return lastPage[lastPage.length - 1]?.id;
@@ -78,6 +72,7 @@ export const ContentList: React.FunctionComponent<
             float: "left"
         }}>
             {media.mediaType === 'IMAGE' && (<img src={`${media.url}?width=250&height=150`} alt={media.title} width="250" height="150" />)}
+            {media.mediaType !== 'IMAGE' && (<video width="250" height="150" controls><source src={`${media.url}`} type="application/x-mpegURL" /></video>)}
         </div>
     );
 
